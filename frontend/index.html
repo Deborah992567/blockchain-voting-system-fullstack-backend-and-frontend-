@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureVote - Blockchain Voting Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #06b6d4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-links a, .nav-links button {
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .nav-links a:hover, .nav-links button:hover {
+            color: var(--primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: fadeIn 0.6s ease;
+            margin-bottom: 2rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .election-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .election-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .election-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .status-active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .status-upcoming { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .status-ended { background: rgba(107, 114, 128, 0.1); color: var(--gray); }
+        .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .status-approved { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .status-rejected { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .toast {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 3000;
+            animation: slideInRight 0.3s ease;
+            display: none;
+        }
+
+        .toast.active { display: block; }
+
+        @keyframes slideInRight {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.warning { border-left: 4px solid var(--warning); }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            animation: fadeIn 1s ease;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .candidate-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+
+        .candidate-item:hover {
+            border-color: var(--primary);
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .candidate-item.selected {
+            border-color: var(--primary);
+            background: rgba(79, 70, 229, 0.1);
+        }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .wallet-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(79, 70, 229, 0.1);
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+
+        .wallet-connected {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .results-bar {
+            background: var(--border);
+            border-radius: 8px;
+            height: 30px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .results-fill {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            height: 100%;
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            color: white;
+            font-weight: 600;
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .role-card {
+            padding: 2rem;
+            text-align: center;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .role-card:hover {
+            border-color: var(--primary);
+            background: rgba(79, 70, 229, 0.05);
+            transform: translateY(-5px);
+        }
+
+        .role-card .role-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .nav-links { gap: 0.75rem; }
+            .hero h1 { font-size: 2rem; }
+            .grid { grid-template-columns: 1fr; }
+            .role-selector { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <div class="logo" onclick="app.showPage('landing')">
+                <span>🗳️</span>
+                <span>SecureVote</span>
+            </div>
+            <div class="nav-links" id="navLinks">
+                <a href="#" onclick="app.showPage('landing')">Home</a>
+                <a href="#" onclick="app.showPage('voterDashboard')" class="hidden" id="navVoterDash">Dashboard</a>
+                <a href="#" onclick="app.showPage('candidateDashboard')" class="hidden" id="navCandidateDash">My Applications</a>
+                <a href="#" onclick="app.showPage('adminDashboard')" class="hidden" id="navAdminDash">Admin Panel</a>
+                <button onclick="app.showPage('roleSelection')" id="navGetStarted">Get Started</button>
+                <button onclick="app.logout()" class="hidden" id="navLogout">Logout</button>
+                <span class="hidden" id="navUserInfo" style="color: var(--gray); font-size: 0.875rem;"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="container">
+        <!-- Landing Page -->
+        <div id="landingPage">
+            <div class="hero">
+                <h1>Secure, Transparent, Blockchain-Powered Voting</h1>
+                <p>Experience the future of democracy with our decentralized voting platform</p>
+                <button class="btn btn-primary" onclick="app.showPage('roleSelection')">Get Started</button>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure & Private</h3>
+                    <p>Your vote is encrypted and secured on the blockchain</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">✅</div>
+                    <h3>Verifiable</h3>
+                    <p>Every vote can be independently verified</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Transparent</h3>
+                    <p>All results are publicly auditable</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Fast & Efficient</h3>
+                    <p>Real-time voting and instant results</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role Selection Page -->
+        <div id="roleSelectionPage" class="hidden">
+            <div class="card">
+                <h2 style="text-align: center; margin-bottom: 2rem;">Choose Your Role</h2>
+                <div class="role-selector">
+                    <div class="role-card" onclick="app.selectRole('admin')">
+                        <div class="role-icon">👨‍💼</div>
+                        <h3>Admin</h3>
+                        <p style="color: var(--gray); margin-top: 0.5rem;">Manage elections and oversee the voting process</p>
+                    </div>
+                    <div class="role-card" onclick="app.selectRole('candidate')">
+                        <div class="role-icon">🎯</div>
+                        <h3>Candidate</h3>
+                        <p style="color: var(--gray); margin-top: 0.5rem;">Apply to run in elections</p>
+                    </div>
+                    <div class="role-card" onclick="app.selectRole('voter')">
+                        <div class="role-icon">🗳️</div>
+                        <h3>Voter</h3>
+                        <p style="color: var(--gray); margin-top: 0.5rem;">Register and cast your vote</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Login/Register -->
+        <div id="adminAuthPage" class="hidden">
+            <div class="card" style="max-width: 500px; margin: 0 auto;">
+                <button class="btn btn-outline" onclick="app.showPage('roleSelection')" style="margin-bottom: 1rem;">← Back</button>
+                <h2 style="text-align: center; margin-bottom: 1rem;">Admin Access</h2>
+                <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;">Administrators need special credentials to access the system</p>
+                
+                <div id="adminLoginForm">
+                    <form onsubmit="app.adminLogin(event)">
+                        <div class="form-group">
+                            <label for="adminEmail">Admin Email</label>
+                            <input type="email" id="adminEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminPassword">Password</label>
+                            <input type="password" id="adminPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminAccessCode">Admin Access Code</label>
+                            <input type="text" id="adminAccessCode" required placeholder="Enter special admin code">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Login as Admin</button>
+                    </form>
+                    <p style="text-align: center; margin-top: 1.5rem;">
+                        Need admin access? <a href="#" onclick="app.showAdminRegister()" style="color: var(--primary);">Register here</a>
+                    </p>
+                </div>
+
+                <div id="adminRegisterForm" class="hidden">
+                    <form onsubmit="app.adminRegister(event)">
+                        <div class="form-group">
+                            <label for="adminRegName">Full Name</label>
+                            <input type="text" id="adminRegName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminRegEmail">Email</label>
+                            <input type="email" id="adminRegEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminRegPassword">Password</label>
+                            <input type="password" id="adminRegPassword" required minlength="8">
+                        </div>
+                        <div class="form-group">
+                            <label for="adminRegAccessCode">Admin Access Code</label>
+                            <input type="text" id="adminRegAccessCode" required placeholder="Special code required">
+                            <small style="color: var(--gray);">Contact system administrator for access code</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem;">Register as Admin</button>
+                        <button type="button" class="btn btn-outline" style="width: 100%;" onclick="app.showAdminLogin()">Back to Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Candidate Registration -->
+        <div id="candidateAuthPage" class="hidden">
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <button class="btn btn-outline" onclick="app.showPage('roleSelection')" style="margin-bottom: 1rem;">← Back</button>
+                <h2 style="text-align: center; margin-bottom: 1rem;">Candidate Registration</h2>
+                <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;">Apply to run in elections</p>
+                
+                <form onsubmit="app.candidateRegister(event)">
+                    <div class="form-group">
+                        <label for="candidateName">Full Name</label>
+                        <input type="text" id="candidateName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="candidateEmail">Email</label>
+                        <input type="email" id="candidateEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="candidatePassword">Password</label>
+                        <input type="password" id="candidatePassword" required minlength="8">
+                    </div>
+                    <div class="form-group">
+                        <label for="candidateParty">Political Party</label>
+                        <input type="text" id="candidateParty" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="candidateBio">Biography</label>
+                        <textarea id="candidateBio" rows="4" required placeholder="Tell voters about yourself..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="candidateManifesto">Manifesto/Platform</label>
+                        <textarea id="candidateManifesto" rows="4" required placeholder="What do you stand for?"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem;">Submit Application</button>
+                </form>
+                <p style="text-align: center; margin-top: 1rem;">
+                    Already registered? <a href="#" onclick="app.showCandidateLogin()" style="color: var(--primary);">Login here</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Candidate Login -->
+        <div id="candidateLoginPage" class="hidden">
+            <div class="card" style="max-width: 500px; margin: 0 auto;">
+                <button class="btn btn-outline" onclick="app.showPage('roleSelection')" style="margin-bottom: 1rem;">← Back</button>
+                <h2 style="text-align: center; margin-bottom: 2rem;">Candidate Login</h2>
+                <form onsubmit="app.candidateLogin(event)">
+                    <div class="form-group">
+                        <label for="candidateLoginEmail">Email</label>
+                        <input type="email" id="candidateLoginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="candidateLoginPassword">Password</label>
+                        <input type="password" id="candidateLoginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+                </form>
+                <p style="text-align: center; margin-top: 1.5rem;">
+                    Not registered? <a href="#" onclick="app.showPage('candidateAuth')" style="color: var(--primary);">Apply here</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Voter Registration -->
+        <div id="voterAuthPage" class="hidden">
+            <div class="card" style="max-width: 500px; margin: 0 auto;">
+                <button class="btn btn-outline" onclick="app.showPage('roleSelection')" style="margin-bottom: 1rem;">← Back</button>
+                <h2 style="text-align: center; margin-bottom: 1rem;">Voter Registration</h2>
+                <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;">Register to participate in elections</p>
+                
+                <form onsubmit="app.voterRegister(event)">
+                    <div class="form-group">
+                        <label for="voterName">Full Name</label>
+                        <input type="text" id="voterName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="voterEmail">Email</label>
+                        <input type="email" id="voterEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="voterPassword">Password</label>
+                        <input type="password" id="voterPassword" required minlength="8">
+                    </div>
+                    <div class="form-group">
+                        <label for="voterID">National ID / Voter ID</label>
+                        <input type="text" id="voterID" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="voterDOB">Date of Birth</label>
+                        <input type="date" id="voterDOB" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="voterAddress">Residential Address</label>
+                        <textarea id="voterAddress" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem;">Register to Vote</button>
+                </form>
+                <p style="text-align: center; margin-top: 1rem;">
+                    Already registered? <a href="#" onclick="app.showVoterLogin()" style="color: var(--primary);">Login here</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Voter Login -->
+        <div id="voterLoginPage" class="hidden">
+            <div class="card" style="max-width: 500px; margin: 0 auto;">
+                <button class="btn btn-outline" onclick="app.showPage('roleSelection')" style="margin-bottom: 1rem;">← Back</button>
+                <h2 style="text-align: center; margin-bottom: 2rem;">Voter Login</h2>
+                <form onsubmit="app.voterLogin(event)">
+                    <div class="form-group">
+                        <label for="voterLoginEmail">Email</label>
+                        <input type="email" id="voterLoginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="voterLoginPassword">Password</label>
+                        <input type="password" id="voterLoginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Login</button>
+                </form>
+                <div style="text-align: center; margin: 1rem 0; color: var(--gray);">or continue with</div>
+                <button class="btn btn-outline" style="width: 100%; margin-bottom: 0.5rem;" onclick="app.socialLogin('google')">
+                    🔷 Google
+                </button>
+                <button class="btn btn-outline" style="width: 100%;" onclick="app.socialLogin('github')">
+                    ⚫ GitHub
+                </button>
+                <p style="text-align: center; margin-top: 1.5rem;">
+                    Not registered? <a href="#" onclick="app.showPage('voterAuth')" style="color: var(--primary);">Register here</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="adminDashboardPage" class="hidden">
+            <div class="card">
+                <h2 style="margin-bottom: 2rem;">Admin Dashboard</h2>
+                <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                    <button class="btn btn-primary" onclick="app.showModal('createElectionModal')">+ Create Election</button>
+                    <button class="btn btn-secondary" onclick="app.showPage('candidateApprovals')">Review Candidates</button>
+                </div>
+                
+                <h3 style="margin-bottom: 1rem;">All Elections</h3>
+                <div id="adminElectionsList"></div>
+            </div>
+        </div>
+
+        <!-- Candidate Approvals -->
+        <div id="candidateApprovalsPage" class="hidden">
+            <div class="card">
+                <button class="btn btn-outline" onclick="app.showPage('adminDashboard')" style="margin-bottom: 1rem;">← Back to Dashboard</button>
+                <h2 style="margin-bottom: 2rem;">Candidate Applications</h2>
+                <div id="candidateApprovalsList"></div>
+            </div>
+        </div>
+
+        <!-- Candidate Dashboard -->
+        <div id="candidateDashboardPage" class="hidden">
+            <div class="card">
+                <h2 style="margin-bottom: 2rem;">Candidate Dashboard</h2>
+                <div id="candidateApplicationStatus"></div>
+                <h3 style="margin: 2rem 0 1rem;">Apply for Election</h3>
+                <div id="availableElections"></div>
+            </div>
+        </div>
+
+        <!-- Voter Dashboard -->
+        <div id="voterDashboardPage" class="hidden">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2>Voter Dashboard</h2>
+                    <div id="walletStatus"></div>
+                </div>
+                
+                <h3 style="margin-bottom: 1rem;">Active Elections</h3>
+                <div class="grid" id="activeElections"></div>
+
+                <h3 style="margin: 2rem 0 1rem;">My Voting History</h3>
+                <div id="votingHistory"></div>
+            </div>
+        </div>
+
+        <!-- Election Detail for Voting -->
+        <div id="electionDetailPage" class="hidden">
+            <div class="card">
+                <button class="btn btn-outline" onclick="app.showPage('voterDashboard')" style="margin-bottom: 1rem;">← Back</button>
+                <div id="electionDetail"></div>
+            </div>
+        </div>
+
+        <!-- Election Results -->
+        <div id="resultsPage" class="hidden">
+            <div class="card">
+                <button class="btn btn-outline" onclick="app.goBack()" style="margin-bottom: 1rem;">← Back</button>
+                <div id="resultsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Create Election Modal -->
+    <div class="modal" id="createElectionModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1rem;">Create New Election</h2>
+            <form onsubmit="app.createElection(event)">
+                <div class="form-group">
+                    <label for="electionName">Election Name</label>
+                    <input type="text" id="electionName" required>
+                </div>
+                <div class="form-group">
+                    <label for="electionDescription">Description</label>
+                    <textarea id="electionDescription" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="electionType">Election Type</label>
+                    <select id="electionType" required>
+                        <option value="">Select type...</option>
+                        <option value="presidential">Presidential</option>
+                        <option value="senate">Senate</option>
+                        <option value="governor">Gubernatorial</option>
+                        <option value="local">Local Council</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="electionStartDate">Start Date & Time</label>
+                    <input type="datetime-local" id="electionStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="electionEndDate">End Date & Time</label>
+                    <input type="datetime-local" id="electionEndDate" required>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="deployContract"> Deploy Smart Contract on Blockchain
+                    </label>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">Create Election</button>
+                    <button type="button" class="btn btn-outline" onclick="app.closeModal('createElectionModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Vote Confirmation Modal -->
+    <div class="modal" id="voteModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1rem;">Confirm Your Vote</h2>
+            <p style="margin-bottom: 1rem;">You are about to vote for:</p>
+            <div id="voteConfirmation" style="padding: 1rem; background: var(--light); border-radius: 8px; margin-bottom: 1rem;"></div>
+            <p style="color: var(--gray); font-size: 0.875rem; margin-bottom: 1.5rem;">
+                ⚠️ This action cannot be undone. Your vote will be recorded on the blockchain.
+            </p>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-success" onclick="app.submitVote()">Confirm & Sign</button>
+                <button class="btn btn-outline" onclick="app.closeModal('voteModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Apply for Election Modal -->
+    <div class="modal" id="applyElectionModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1rem;">Apply for Election</h2>
+            <div id="applyElectionInfo" style="margin-bottom: 1rem; padding: 1rem; background: var(--light); border-radius: 8px;"></div>
+            <form onsubmit="app.submitCandidateApplication(event)">
+                <div class="form-group">
+                    <label for="campaignSlogan">Campaign Slogan</label>
+                    <input type="text" id="campaignSlogan" required placeholder="Your campaign message">
+                </div>
+                <div class="form-group">
+                    <label for="campaignPromises">Key Campaign Promises</label>
+                    <textarea id="campaignPromises" rows="4" required placeholder="What will you do if elected?"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">Submit Application</button>
+                    <button type="button" class="btn btn-outline" onclick="app.closeModal('applyElectionModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const app = {
+            currentUser: null,
+            currentPage: 'landing',
+            currentElection: null,
+            selectedCandidate: null,
+            walletConnected: false,
+            walletAddress: null,
+            previousPage: null,
+
+            init() {
+                this.checkAuth();
+                this.showPage('landing');
+            },
+
+            checkAuth() {
+                const token = localStorage.getItem('authToken');
+                const user = localStorage.getItem('user');
+                if (token && user) {
+                    this.currentUser = JSON.parse(user);
+                    this.updateNavigation(true);
+                    this.redirectToRoleDashboard();
+                }
+            },
+
+            showPage(page) {
+                const pages = ['landing', 'roleSelection', 'adminAuth', 'candidateAuth', 'candidateLogin', 
+                              'voterAuth', 'voterLogin', 'adminDashboard', 'candidateApprovals', 
+                              'candidateDashboard', 'voterDashboard', 'electionDetail', 'results'];
+                
+                pages.forEach(p => {
+                    const el = document.getElementById(p + 'Page');
+                    if (el) el.classList.add('hidden');
+                });
+
+                const targetPage = document.getElementById(page + 'Page');
+                if (targetPage) {
+                    targetPage.classList.remove('hidden');
+                    this.previousPage = this.currentPage;
+                    this.currentPage = page;
+                }
+
+                // Load page-specific data
+                if (page === 'adminDashboard') this.loadAdminDashboard();
+                if (page === 'candidateApprovals') this.loadCandidateApprovals();
+                if (page === 'candidateDashboard') this.loadCandidateDashboard();
+                if (page === 'voterDashboard') this.loadVoterDashboard();
+            },
+
+            goBack() {
+                if (this.currentUser) {
+                    this.redirectToRoleDashboard();
+                } else {
+                    this.showPage('landing');
+                }
+            },
+
+            selectRole(role) {
+                if (role === 'admin') {
+                    this.showPage('adminAuth');
+                } else if (role === 'candidate') {
+                    this.showPage('candidateAuth');
+                } else if (role === 'voter') {
+                    this.showPage('voterAuth');
+                }
+            },
+
+            showAdminRegister() {
+                document.getElementById('adminLoginForm').classList.add('hidden');
+                document.getElementById('adminRegisterForm').classList.remove('hidden');
+            },
+
+            showAdminLogin() {
+                document.getElementById('adminLoginForm').classList.remove('hidden');
+                document.getElementById('adminRegisterForm').classList.add('hidden');
+            },
+
+            showCandidateLogin() {
+                this.showPage('candidateLogin');
+            },
+
+            showVoterLogin() {
+                this.showPage('voterLogin');
+            },
+
+            adminRegister(e) {
+                e.preventDefault();
+                const accessCode = document.getElementById('adminRegAccessCode').value;
+                
+                if (accessCode !== 'ADMIN2024') {
+                    this.showToast('Invalid admin access code', 'error');
+                    return;
+                }
+
+                this.showToast('Creating admin account...', 'success');
+                setTimeout(() => {
+                    this.showAdminLogin();
+                    this.showToast('Admin account created! Please login.', 'success');
+                }, 1500);
+            },
+
+            adminLogin(e) {
+                e.preventDefault();
+                const email = document.getElementById('adminEmail').value;
+                const password = document.getElementById('adminPassword').value;
+                const accessCode = document.getElementById('adminAccessCode').value;
+                this.showToast('Logging in...', 'success');
+                (async () => {
+                    try {
+                        const tokenResp = await oauthLogin(email, password);
+                        localStorage.setItem('authToken', tokenResp.access_token);
+                        const me = await getCurrentUserAPI();
+                        this.setUserSession({ ...me });
+                        this.showPage('adminDashboard');
+                        this.showToast('Welcome Admin!', 'success');
+                    } catch (err) {
+                        this.showToast(err.message || 'Login failed', 'error');
+                    }
+                })();
+            },
+
+            candidateRegister(e) {
+                e.preventDefault();
+                const name = document.getElementById('candidateName').value;
+                const email = document.getElementById('candidateEmail').value;
+                const party = document.getElementById('candidateParty').value;
+                this.showToast('Submitting application...', 'success');
+                (async () => {
+                    try {
+                        // register user on backend (simple email/password flow)
+                        const password = document.getElementById('candidatePassword').value;
+                        await registerAPI(email, password);
+                        this.showToast('Registration created. Please login to continue.', 'success');
+                        this.showCandidateLogin();
+                    } catch (err) {
+                        this.showToast(err.message || 'Registration failed', 'error');
+                    }
+                })();
+            },
+
+            candidateLogin(e) {
+                e.preventDefault();
+                const email = document.getElementById('candidateLoginEmail').value;
+
+                this.showToast('Logging in...', 'success');
+                (async () => {
+                    try {
+                        const tokenResp = await oauthLogin(email, document.getElementById('candidateLoginPassword').value);
+                        localStorage.setItem('authToken', tokenResp.access_token);
+                        const me = await getCurrentUserAPI();
+                        this.setUserSession({ ...me });
+                        this.showPage('candidateDashboard');
+                        this.showToast('Welcome back!', 'success');
+                    } catch (err) {
+                        this.showToast(err.message || 'Login failed', 'error');
+                    }
+                })();
+            },
+
+            voterRegister(e) {
+                e.preventDefault();
+                const name = document.getElementById('voterName').value;
+                const email = document.getElementById('voterEmail').value;
+                const voterId = document.getElementById('voterID').value;
+                this.showToast('Registering voter...', 'success');
+                (async () => {
+                    try {
+                        const password = document.getElementById('voterPassword').value;
+                        await registerAPI(email, password);
+                        this.showToast('Account created. Please login to continue.', 'success');
+                        this.showVoterLogin();
+                    } catch (err) {
+                        this.showToast(err.message || 'Registration failed', 'error');
+                    }
+                })();
+            },
+
+            voterLogin(e) {
+                e.preventDefault();
+                const email = document.getElementById('voterLoginEmail').value;
+
+                this.showToast('Logging in...', 'success');
+                (async () => {
+                    try {
+                        const tokenResp = await oauthLogin(email, document.getElementById('voterLoginPassword').value);
+                        localStorage.setItem('authToken', tokenResp.access_token);
+                        const me = await getCurrentUserAPI();
+                        this.setUserSession({ ...me });
+                        this.showPage('voterDashboard');
+                        this.showToast('Welcome back!', 'success');
+                    } catch (err) {
+                        this.showToast(err.message || 'Login failed', 'error');
+                    }
+                })();
+            },
+
+            socialLogin(provider) {
+                this.showToast(`Connecting to ${provider}...`, 'success');
+                setTimeout(() => {
+                    const user = {
+                        id: '3',
+                        name: 'Social User',
+                        email: `user@${provider}.com`,
+                        role: 'voter',
+                        voterId: 'V' + Date.now(),
+                        verified: true,
+                        votes: []
+                    };
+                    this.setUserSession(user);
+                    this.showPage('voterDashboard');
+                    this.showToast(`Logged in with ${provider}!`, 'success');
+                }, 1500);
+            },
+
+            setUserSession(user) {
+                this.currentUser = user;
+                if (user && user.access_token) {
+                    // If passed an auth response object
+                    localStorage.setItem('authToken', user.access_token);
+                }
+                // attempt to fetch canonical user data from backend
+                (async () => {
+                    try {
+                        const me = await getCurrentUserAPI();
+                        this.currentUser = { ...this.currentUser, ...me };
+                        localStorage.setItem('user', JSON.stringify(this.currentUser));
+                        this.updateNavigation(true);
+                    } catch (err) {
+                        // if fetching current user fails, clear session
+                        console.warn('Failed to load current user, clearing session');
+                        this.logout();
+                    }
+                })();
+            },
+
+            updateNavigation(loggedIn) {
+                document.getElementById('navGetStarted').classList.toggle('hidden', loggedIn);
+                document.getElementById('navLogout').classList.toggle('hidden', !loggedIn);
+                
+                document.getElementById('navVoterDash').classList.add('hidden');
+                document.getElementById('navCandidateDash').classList.add('hidden');
+                document.getElementById('navAdminDash').classList.add('hidden');
+
+                if (loggedIn && this.currentUser) {
+                    document.getElementById('navUserInfo').classList.remove('hidden');
+                    document.getElementById('navUserInfo').textContent = `${this.currentUser.name} (${this.currentUser.role})`;
+
+                    if (this.currentUser.role === 'admin') {
+                        document.getElementById('navAdminDash').classList.remove('hidden');
+                    } else if (this.currentUser.role === 'candidate') {
+                        document.getElementById('navCandidateDash').classList.remove('hidden');
+                    } else if (this.currentUser.role === 'voter') {
+                        document.getElementById('navVoterDash').classList.remove('hidden');
+                    }
+                } else {
+                    document.getElementById('navUserInfo').classList.add('hidden');
+                }
+            },
+
+            redirectToRoleDashboard() {
+                if (this.currentUser) {
+                    if (this.currentUser.role === 'admin') {
+                        this.showPage('adminDashboard');
+                    } else if (this.currentUser.role === 'candidate') {
+                        this.showPage('candidateDashboard');
+                    } else if (this.currentUser.role === 'voter') {
+                        this.showPage('voterDashboard');
+                    }
+                }
+            },
+
+            logout() {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                this.currentUser = null;
+                this.walletConnected = false;
+                this.updateNavigation(false);
+                this.showPage('landing');
+                this.showToast('Logged out successfully', 'success');
+            },
+
+            // Admin Functions
+            loadAdminDashboard() {
+                (async () => {
+                    try {
+                        const elections = await getElectionsAPI();
+                        const sgStatus = await apiCall('/test/email/check').catch(() => ({ sendgrid_configured: false }));
+
+                        document.getElementById('adminElectionsList').innerHTML = `
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+                                        <th style="padding: 1rem;">Election</th>
+                                        <th style="padding: 1rem;">Status</th>
+                                        <th style="padding: 1rem;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${elections.map(e => `
+                                        <tr style="border-bottom: 1px solid var(--border);">
+                                            <td style="padding: 1rem;"><strong>${e.name}</strong></td>
+                                            <td style="padding: 1rem;">
+                                                <span class="election-status status-${e.is_active ? 'active' : 'upcoming'}">${e.is_active ? 'ACTIVE' : 'UPCOMING'}</span>
+                                            </td>
+                                            <td style="padding: 1rem;">
+                                                <button class="btn btn-primary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;" onclick="app.viewResults(${e.id})">
+                                                    Results
+                                                </button>
+                                                ${e.is_active ? `
+                                                    <button class="btn btn-danger" style="padding: 0.5rem 1rem;" onclick="app.endElection(${e.id})">
+                                                        End
+                                                    </button>
+                                                ` : `
+                                                    <button class="btn btn-success" style="padding: 0.5rem 1rem;" onclick="app.startElection(${e.id})">
+                                                        Start
+                                                    </button>
+                                                `}
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <div style="margin-top:1rem; display:flex; align-items:center; gap:1rem;">
+                                <div style="font-size:0.95rem; color:var(--gray);">SendGrid: ${sgStatus?.sendgrid_configured ? '<strong style="color:var(--success)">Configured</strong>' : '<strong style="color:var(--warning)">Not configured</strong>'}</div>
+                                ${sgStatus?.sendgrid_configured ? `<button class="btn btn-outline" onclick="(async()=>{ try{ await apiCall('/test/email/test?to=${encodeURIComponent(sgStatus.email_from || 'no-reply@example.com')}',{ method: 'POST' }); app.showToast('Test email requested', 'success'); }catch(e){ app.showToast('Test email failed','error'); } })()">Send Test Email</button>` : ''}
+                            </div>
+                        `;
+                    } catch (err) {
+                        document.getElementById('adminElectionsList').innerHTML = '<p style="color:var(--gray);">Failed to load elections</p>';
+                    }
+                })();
+            },
+
+            loadCandidateApprovals() {
+                const candidates = [
+                    { id: 1, name: 'Alice Johnson', party: 'Democratic Party', election: 'Presidential Election 2024', status: 'pending', appliedDate: '2024-01-15' },
+                    { id: 2, name: 'Bob Smith', party: 'Republican Party', election: 'Presidential Election 2024', status: 'pending', appliedDate: '2024-01-16' },
+                    { id: 3, name: 'Carol White', party: 'Independent', election: 'Senate District 5', status: 'approved', appliedDate: '2024-01-10' }
+                ];
+
+                document.getElementById('candidateApprovalsList').innerHTML = candidates.map(c => `
+                    <div style="padding: 1.5rem; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                            <div>
+                                <h3>${c.name}</h3>
+                                <p style="color: var(--gray); margin: 0.25rem 0;">${c.party}</p>
+                                <p style="color: var(--gray); font-size: 0.875rem;">Applied for: ${c.election}</p>
+                                <p style="color: var(--gray); font-size: 0.875rem;">Date: ${c.appliedDate}</p>
+                            </div>
+                            <span class="election-status status-${c.status}">${c.status.toUpperCase()}</span>
+                        </div>
+                        ${c.status === 'pending' ? `
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-success" onclick="app.approveCandidate(${c.id})">Approve</button>
+                                <button class="btn btn-danger" onclick="app.rejectCandidate(${c.id})">Reject</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            },
+
+            approveCandidate(id) {
+                if (confirm('Approve this candidate?')) {
+                    this.showToast('Candidate approved!', 'success');
+                    setTimeout(() => this.loadCandidateApprovals(), 1000);
+                }
+            },
+
+            rejectCandidate(id) {
+                if (confirm('Reject this candidate?')) {
+                    this.showToast('Candidate rejected', 'warning');
+                    setTimeout(() => this.loadCandidateApprovals(), 1000);
+                }
+            },
+
+            createElection(e) {
+                e.preventDefault();
+                const name = document.getElementById('electionName').value;
+                const deployContract = document.getElementById('deployContract').checked;
+
+                this.showToast('Creating election...', 'success');
+                setTimeout(() => {
+                    if (deployContract) {
+                        this.showToast('Deploying smart contract...', 'success');
+                        setTimeout(() => {
+                            this.showToast('Election created successfully!', 'success');
+                            this.closeModal('createElectionModal');
+                            this.loadAdminDashboard();
+                        }, 2000);
+                    } else {
+                        this.showToast('Election created successfully!', 'success');
+                        this.closeModal('createElectionModal');
+                        this.loadAdminDashboard();
+                    }
+                }, 1500);
+            },
+
+            startElection(id) {
+                if (confirm('Start this election?')) {
+                    this.showToast('Starting election...', 'success');
+                    setTimeout(() => {
+                        this.showToast('Election started!', 'success');
+                        this.loadAdminDashboard();
+                    }, 1000);
+                }
+            },
+
+            endElection(id) {
+                if (confirm('End this election? This cannot be undone.')) {
+                    this.showToast('Ending election...', 'success');
+                    setTimeout(() => {
+                        this.showToast('Election ended!', 'success');
+                        this.loadAdminDashboard();
+                    }, 1000);
+                }
+            },
+
+            // Candidate Functions
+            loadCandidateDashboard() {
+                document.getElementById('candidateApplicationStatus').innerHTML = this.currentUser.approved 
+                    ? `
+                        <div style="padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px; margin-bottom: 2rem;">
+                            <h3 style="color: var(--success); margin-bottom: 0.5rem;">✅ Profile Approved</h3>
+                            <p style="color: var(--gray);">You can now apply for elections</p>
+                        </div>
+                        <h3 style="margin-bottom: 1rem;">Your Applications</h3>
+                        ${this.currentUser.applications && this.currentUser.applications.length > 0 
+                            ? this.currentUser.applications.map(app => `
+                                <div style="padding: 1rem; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
+                                    <strong>${app.electionName}</strong>
+                                    <span class="badge badge-${app.status === 'approved' ? 'success' : app.status === 'rejected' ? 'danger' : 'warning'}" style="margin-left: 1rem;">
+                                        ${app.status.toUpperCase()}
+                                    </span>
+                                </div>
+                            `).join('')
+                            : '<p style="color: var(--gray);">No applications yet</p>'
+                        }
+                    `
+                    : `
+                        <div style="padding: 1rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px; margin-bottom: 2rem;">
+                            <h3 style="color: var(--warning); margin-bottom: 0.5rem;">⏳ Awaiting Approval</h3>
+                            <p style="color: var(--gray);">Your profile is under review by administrators</p>
+                        </div>
+                    `;
+
+                const elections = [
+                    { id: 1, name: 'Presidential Election 2024', type: 'presidential', status: 'active', deadline: '2024-03-01' },
+                    { id: 2, name: 'Senate District 5', type: 'senate', status: 'active', deadline: '2024-02-15' }
+                ];
+
+                document.getElementById('availableElections').innerHTML = this.currentUser.approved
+                    ? elections.map(e => `
+                        <div class="election-card" style="cursor: default;">
+                            <span class="election-status status-${e.status}">${e.status.toUpperCase()}</span>
+                            <h3>${e.name}</h3>
+                            <p style="color: var(--gray); margin: 0.5rem 0;">Application Deadline: ${e.deadline}</p>
+                            <button class="btn btn-primary" onclick="app.applyForElection(${e.id}, '${e.name}')" style="margin-top: 1rem;">
+                                Apply Now
+                            </button>
+                        </div>
+                    `).join('')
+                    : '<p style="color: var(--gray);">Complete profile approval to apply for elections</p>';
+            },
+
+            applyForElection(electionId, electionName) {
+                document.getElementById('applyElectionInfo').innerHTML = `
+                    <strong>Election:</strong> ${electionName}
+                `;
+                this.currentElection = { id: electionId, name: electionName };
+                this.showModal('applyElectionModal');
+            },
+
+            submitCandidateApplication(e) {
+                e.preventDefault();
+                this.showToast('Submitting application...', 'success');
+                setTimeout(() => {
+                    this.showToast('Application submitted successfully!', 'success');
+                    this.closeModal('applyElectionModal');
+                    this.loadCandidateDashboard();
+                }, 1500);
+            },
+
+            // Voter Functions
+            loadVoterDashboard() {
+                document.getElementById('walletStatus').innerHTML = this.walletConnected
+                    ? `<div class="wallet-status"><div class="wallet-connected"></div><span>${this.walletAddress?.slice(0,6)}...${this.walletAddress?.slice(-4)}</span></div>`
+                    : `<button class="btn btn-primary" onclick="app.connectWallet()">Connect Wallet</button>`;
+
+                const elections = [
+                    { id: 1, name: 'Presidential Election 2024', status: 'active', endDate: '2024-12-31', candidates: 3, hasVoted: false },
+                    { id: 2, name: 'Senate District 5', status: 'active', endDate: '2024-11-15', candidates: 4, hasVoted: false }
+                ];
+
+                document.getElementById('activeElections').innerHTML = elections.map(e => `
+                    <div class="election-card" onclick="app.showElectionDetail(${e.id})">
+                        <span class="election-status status-${e.status}">${e.status.toUpperCase()}</span>
+                        ${e.hasVoted ? '<span class="badge badge-success" style="margin-left: 0.5rem;">VOTED</span>' : ''}
+                        <h3>${e.name}</h3>
+                        <p style="color: var(--gray); margin: 0.5rem 0;">Ends: ${e.endDate}</p>
+                        <p style="color: var(--gray);">${e.candidates} Candidates</p>
+                    </div>
+                `).join('');
+
+                document.getElementById('votingHistory').innerHTML = this.currentUser.votes && this.currentUser.votes.length > 0
+                    ? this.currentUser.votes.map(v => `
+                        <div style="padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.5rem;">
+                            <strong>${v.election}</strong>
+                            <p style="color: var(--gray); margin: 0.5rem 0;">Date: ${v.date}</p>
+                            <p style="color: var(--gray); font-size: 0.875rem;">TX: ${v.txHash}</p>
+                        </div>
+                    `).join('')
+                    : '<p style="color: var(--gray);">No voting history yet</p>';
+            },
+
+            showElectionDetail(id) {
+                this.currentElection = {
+                    id: id,
+                    name: 'Presidential Election 2024',
+                    description: 'Vote for the next president',
+                    status: 'active',
+                    endDate: '2024-12-31',
+                    candidates: [
+                        { id: 1, name: 'Alice Johnson', party: 'Democratic Party', slogan: 'Together We Rise' },
+                        { id: 2, name: 'Bob Smith', party: 'Republican Party', slogan: 'Strong Leadership' },
+                        { id: 3, name: 'Carol White', party: 'Independent', slogan: 'Voice of the People' }
+                    ]
+                };
+
+                document.getElementById('electionDetail').innerHTML = `
+                    <h2>${this.currentElection.name}</h2>
+                    <span class="election-status status-${this.currentElection.status}">${this.currentElection.status.toUpperCase()}</span>
+                    <p style="margin: 1rem 0;">${this.currentElection.description}</p>
+                    <p style="color: var(--gray); margin-bottom: 2rem;">Ends: ${this.currentElection.endDate}</p>
+                    
+                    <h3 style="margin-bottom: 1rem;">Select a Candidate</h3>
+                    <div id="candidateList">
+                        ${this.currentElection.candidates.map(c => `
+                            <div class="candidate-item" data-candidate-id="${c.id}" onclick="app.selectCandidate(${c.id})">
+                                <div>
+                                    <strong>${c.name}</strong>
+                                    <p style="color: var(--gray); margin: 0.25rem 0;">${c.party}</p>
+                                    <p style="font-style: italic; color: var(--gray); font-size: 0.875rem;">"${c.slogan}"</p>
+                                </div>
+                                <input type="radio" name="candidate" value="${c.id}">
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <button class="btn btn-primary" style="margin-top: 1.5rem;" onclick="app.showVoteConfirmation()" id="voteButton" disabled>
+                        Cast Vote
+                    </button>
+                `;
+                
+                this.showPage('electionDetail');
+            },
+
+            selectCandidate(candidateId) {
+                this.selectedCandidate = this.currentElection.candidates.find(c => c.id === candidateId);
+                
+                document.querySelectorAll('.candidate-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                document.querySelector(`[data-candidate-id="${candidateId}"]`).classList.add('selected');
+                document.getElementById('voteButton').disabled = false;
+            },
+
+            showVoteConfirmation() {
+                if (!this.selectedCandidate) {
+                    this.showToast('Please select a candidate', 'warning');
+                    return;
+                }
+
+                document.getElementById('voteConfirmation').innerHTML = `
+                    <strong>Election:</strong> ${this.currentElection.name}<br>
+                    <strong>Candidate:</strong> ${this.selectedCandidate.name}<br>
+                    <strong>Party:</strong> ${this.selectedCandidate.party}
+                `;
+
+                this.showModal('voteModal');
+            },
+
+            async submitVote() {
+                this.closeModal('voteModal');
+                this.showToast('Connecting to wallet...', 'success');
+
+                setTimeout(async () => {
+                    if (!this.walletConnected) {
+                        await this.connectWallet();
+                    }
+
+                    this.showToast('Please sign the message in your wallet...', 'success');
+
+                    setTimeout(() => {
+                        this.showToast('Submitting vote to blockchain...', 'success');
+
+                        setTimeout(() => {
+                            this.showToast('Vote submitted successfully!', 'success');
+                            this.showPage('voterDashboard');
+                            this.selectedCandidate = null;
+                        }, 2000);
+                    }, 1500);
+                }, 1000);
+            },
+
+            async connectWallet() {
+                try {
+                    if (typeof window.ethereum !== 'undefined') {
+                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        this.walletAddress = accounts[0];
+                        this.walletConnected = true;
+                        this.showToast('Wallet connected!', 'success');
+                        this.loadVoterDashboard();
+                    } else {
+                        this.showToast('Connecting wallet...', 'success');
+                        setTimeout(() => {
+                            this.walletAddress = '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb';
+                            this.walletConnected = true;
+                            this.showToast('Wallet connected!', 'success');
+                            this.loadVoterDashboard();
+                        }, 1500);
+                    }
+                } catch (error) {
+                    this.showToast('Failed to connect wallet', 'error');
+                }
+            },
+
+            viewResults(id) {
+                const election = {
+                    id: id,
+                    name: 'Presidential Election 2024',
+                    status: 'active',
+                    totalVotes: 3240,
+                    contractAddress: '0xabc123def456789...',
+                    candidates: [
+                        { name: 'Alice Johnson', party: 'Democratic Party', votes: 1250, percentage: 38.6 },
+                        { name: 'Bob Smith', party: 'Republican Party', votes: 1100, percentage: 34.0 },
+                        { name: 'Carol White', party: 'Independent', votes: 890, percentage: 27.4 }
+                    ]
+                };
+
+                document.getElementById('resultsContent').innerHTML = `
+                    <h2>${election.name}</h2>
+                    <span class="election-status status-${election.status}">${election.status.toUpperCase()}</span>
+                    
+                    <div style="margin: 2rem 0;">
+                        <p><strong>Total Votes:</strong> ${election.totalVotes.toLocaleString()}</p>
+                        <p style="color: var(--gray); font-size: 0.875rem; margin-top: 0.5rem;">
+                            Contract: ${election.contractAddress}
+                        </p>
+                    </div>
+
+                    <h3 style="margin-bottom: 1.5rem;">Results</h3>
+                    ${election.candidates.map(c => `
+                        <div style="margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <div>
+                                    <strong>${c.name}</strong>
+                                    <span style="color: var(--gray); margin-left: 0.5rem;">${c.party}</span>
+                                </div>
+                                <strong>${c.percentage}%</strong>
+                            </div>
+                            <div class="results-bar">
+                                <div class="results-fill" style="width: ${c.percentage}%;">
+                                    ${c.votes.toLocaleString()} votes
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+
+                    <div style="margin-top: 2rem; padding: 1rem; background: var(--light); border-radius: 8px;">
+                        <h4 style="margin-bottom: 0.5rem;">Blockchain Verification</h4>
+                        <p style="color: var(--gray); font-size: 0.875rem;">
+                            ✅ All votes verified on blockchain<br>
+                            ✅ Smart contract integrity confirmed<br>
+                            ✅ Results are publicly auditable
+                        </p>
+                    </div>
+                `;
+
+                this.showPage('results');
+            },
+
+            showModal(modalId) {
+                document.getElementById(modalId).classList.add('active');
+            },
+
+            closeModal(modalId) {
+                document.getElementById(modalId).classList.remove('active');
+            },
+
+            showToast(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.className = `toast ${type} active`;
+                
+                setTimeout(() => {
+                    toast.classList.remove('active');
+                }, 3000);
+            }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+
+            // Close modals when clicking outside
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            });
+
+            // Detect MetaMask
+            if (typeof window.ethereum !== 'undefined') {
+                console.log('MetaMask detected!');
+            }
+        });
+
+        // API Integration Ready
+        // Default to local backend during development; can be overridden via localStorage.API_BASE_URL
+        const API_BASE_URL = localStorage.getItem('API_BASE_URL') || 'http://localhost:8000';
+
+        async function apiCall(endpoint, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` }),
+                ...options.headers
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    ...options,
+                    headers
+                });
+
+                // If no content (204) return null
+                if (response.status === 204) return null;
+
+                const text = await response.text();
+                let json = null;
+                try { json = text ? JSON.parse(text) : null; } catch(e) { json = text; }
+
+                if (!response.ok) {
+                    const err = json?.detail || json?.message || response.statusText || 'Unknown error';
+                    throw new Error(err);
+                }
+
+                return json;
+            } catch (error) {
+                console.error('API call failed:', error);
+                app.showToast(error.message || 'Network error. Please try again.', 'error');
+                throw error;
+            }
+        }
+
+        // Helper for OAuth2 password form login (application/x-www-form-urlencoded)
+        async function oauthLogin(email, password) {
+            const params = new URLSearchParams();
+            params.append('username', email);
+            params.append('password', password);
+            const res = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params.toString()
+            });
+            if (!res.ok) {
+                const text = await res.text();
+                let json = null; try { json = text ? JSON.parse(text) : null; } catch(e) { json = text; }
+                const err = json?.detail || json?.message || res.statusText;
+                throw new Error(err || 'Login failed');
+            }
+            return await res.json();
+        }
+
+        // API functions
+        async function registerAPI(email, password) {
+            return await apiCall('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+        }
+
+        async function socialLoginAPI(provider, provider_id, email) {
+            return await apiCall('/auth/social-login', {
+                method: 'POST',
+                body: JSON.stringify({ provider, provider_id, email })
+            });
+        }
+
+        async function getCurrentUserAPI() {
+            return await apiCall('/auth/me');
+        }
+
+        async function createElectionAPI(electionData) {
+            return await apiCall('/elections/', {
+                method: 'POST',
+                body: JSON.stringify(electionData)
+            });
+        }
+
+        async function getElectionsAPI() {
+            return await apiCall('/elections/');
+        }
+
+        async function getElectionDetailsAPI(electionId) {
+            return await apiCall(`/elections/${electionId}/details`);
+        }
+
+        async function castVoteAPI(electionId, candidateId) {
+            return await apiCall(`/votes/cast-vote/${electionId}/${candidateId}`, { method: 'POST' });
+        }
+
+        async function submitSignatureAPI(electionId, candidateId, signature, message, tx_hash = null) {
+            return await apiCall('/votes/submit-signature', {
+                method: 'POST',
+                body: JSON.stringify({ election_id: electionId, candidate_id: candidateId, signature, message, tx_hash })
+            });
+        }
+
+        async function getResultsAPI(electionId) {
+            // backend exposes votes/election/{id}/results
+            return await apiCall(`/votes/election/${electionId}/results`);
+        }
+
+        // Health API
+        async function getHealthAPI() {
+            return await apiCall('/health');
+        }
+    </script>
+</body>
+</html>

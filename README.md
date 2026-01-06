@@ -28,6 +28,15 @@ source .venv/bin/activate
 - `DATABASE_URL` (Postgres)
 - `SECRET_KEY` and other OAuth/SendGrid settings (see `app/config.py`)
 
+Example .env values (use your own secure values):
+
+```
+DATABASE_URL=postgresql://postgres:YOUR_DB_PASSWORD@localhost:5432/voting-system
+SECRET_KEY=your-secret
+SENDGRID_API_KEY=your-sendgrid-key
+EMAIL_FROM=no-reply@example.com
+```
+
 3. Run database migrations (Alembic)
 
 ```bash
@@ -68,3 +77,28 @@ PYTHONPATH=backend pytest -q
 ## Notes & Next steps
 - You should **not** store user private keys on the server — the current code supports signed-message verification (and optionally submitting on-chain tx from client). See `POST /votes/submit-signature`.
 - Consider adding integration tests that mock Web3 or run against a local Ganache instance for on-chain verification.
+
+## SendGrid & Database logging
+
+- To check SendGrid configuration at runtime use `GET /test/email/check` which returns whether `SENDGRID_API_KEY` is present. An admin-only endpoint `POST /test/email/test?to=you@example.com` will attempt to send a test email.
+- A helper script is provided to test SendGrid from the command line: `SENDGRID_API_KEY=KEY TEST_EMAIL=you@example.com python backend/scripts/check_sendgrid.py`
+- Database SQL logging can be enabled with `DATABASE_LOGGING=1` (it defaults to enabled when `DATABASE_URL` contains `postgresql`). SQL statements are logged to the `logs/` directory.
+
+## Environment variables and `.env`
+
+Create a `.env` file in `blockchain-voting-system/app/.env` (already used by the app if `python-dotenv` is installed). **Do not commit `.env` to source control.**
+
+Key variables to set in `.env`:
+
+- `DATABASE_URL` — Postgres connection string (e.g., `postgresql://user:pass@localhost:5432/voting-system`)
+- `SECRET_KEY` — cryptographic secret for JWTs and other signing
+- `SECURITY_PASSWORD_SALT` — salt used for password hashing / reset tokens
+- `SENDGRID_API_KEY` — SendGrid API key for transactional email
+- `EMAIL_FROM` — sender address for transactional emails
+- `ADMIN_ADDRESS` / `ADMIN_PRIVATE_KEY` — admin blockchain wallet (dev only)
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — OAuth for Google
+- `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` — OAuth for GitHub
+- `REDIS_URL` — Redis connection (optional)
+- `DATABASE_LOGGING` — `1` or `0` to toggle SQL logging
+
+For local development, a `.env` example is included in `blockchain-voting-system/app/.env`.
