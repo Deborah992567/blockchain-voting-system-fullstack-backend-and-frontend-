@@ -2,9 +2,9 @@ from fastapi import FastAPI, Depends
 from app.deps.timing import timing_dependency
 from app.routes import election, candidate, test, auth
 from app.routes import vote, results
-from app.database.base import Base
 from app.database.session import engine
 import uvicorn
+from app.models import Base
 from app.models import user, election as election_model, candidate as candidate_model, vote as vote_model, otp, email_job  # import all models (including OTP and EmailJob)
 from app.utils.logger import logger as base_logger
 from app.tasks.scheduler import start_scheduler, stop_scheduler
@@ -70,11 +70,12 @@ def _startup():
         logger.error("DATABASE_URL is not set. Configure DATABASE_URL to point to your Postgres instance.")
     # Database connectivity check
     try:
+        from sqlalchemy import text
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
-        logger.info("Database connected", url=str(settings.DATABASE_URL))
-    except Exception:
-        logger.exception("Database connection failed; ensure DATABASE_URL is correct and Postgres is reachable")
+            conn.execute(text("SELECT 1"))
+        logger.info("Database connected successfully")
+    except Exception as e:
+        logger.warning(f"Database connection test failed (may be normal for initial startup): {e}")
 
     # SendGrid configuration notice
     if not settings.SENDGRID_API_KEY:
